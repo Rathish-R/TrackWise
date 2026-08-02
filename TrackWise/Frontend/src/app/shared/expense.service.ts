@@ -1,0 +1,30 @@
+import { Injectable, Inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { API_BASE_URL } from './api-base-url';
+import { Expense } from './model/expense';
+
+@Injectable({ providedIn: 'root' })
+export class ExpenseService {
+  constructor(private http: HttpClient, @Inject(API_BASE_URL) private baseUrl: string) {}
+
+  list(): Observable<Expense[]> {
+    return this.http.get<Expense[]>(this.baseUrl + '/api/Expenses');
+  }
+
+  get(id: number): Observable<Expense> {
+    return this.http.get<Expense>(this.baseUrl + '/api/Expenses/' + id);
+  }
+
+  create(expense: Expense): Observable<Expense> {
+    return this.http.post<Expense>(this.baseUrl + '/api/Expenses', expense);
+  }
+
+  update(id: number, expense: Expense): Observable<void> {
+    return this.http.put<void>(this.baseUrl + '/api/Expenses/' + id, expense);
+  }
+
+  delete(id: number): Observable<void> {
+    return this.http.delete<void>(this.baseUrl + '/api/Expenses/' + id);
+  }
+}

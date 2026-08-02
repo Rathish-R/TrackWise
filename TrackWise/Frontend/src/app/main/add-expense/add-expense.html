@@ -1,0 +1,41 @@
+<div class="card p-4">
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h5 class="mb-0">Add Expense</h5>
+  </div>
+
+  <form [formGroup]="expenseForm" (ngSubmit)="onSubmit()" class="expense-form">
+
+    <div class="mb-3">
+      <label class="form-label">Title</label>
+      <input type="text" class="form-control" formControlName="title" placeholder="e.g. Swiggy order" />
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Amount (₹)</label>
+      <input type="number" class="form-control" formControlName="amount" placeholder="0.00" min="1" />
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Category</label>
+      <select class="form-select" formControlName="categoryId">
+        <option value="" disabled>Select a category</option>
+        @for (cat of categories; track cat.id) {
+          <option [value]="cat.id">{{ cat.name }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="mb-4">
+      <label class="form-label">Date</label>
+      <input type="date" class="form-control" formControlName="date" />
+    </div>
+
+    <div class="d-flex gap-2">
+      <button type="submit" class="btn btn-primary" [disabled]="expenseForm.invalid">Save</button>
+      <button type="button" class="btn btn-outline-secondary" (click)="onCancel()">Cancel</button>
+    </div>
+
+  </form>
+
+</div>

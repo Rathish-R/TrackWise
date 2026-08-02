@@ -1,13 +1,28 @@
+.app-shell {
+  min-height: 100vh;
+}
+
+.topbar {
+  background: linear-gradient(90deg, #1a1a2e 0%, #16213e 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sidebar {
+  width: 240px;
+  background-color: #16213e;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+}
+
 .sidebar-link {
   display: flex;
   align-items: center;
   gap: 10px;
   padding: 10px 14px;
   border-radius: 8px;
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(255, 255, 255, 0.7);
   text-decoration: none;
   font-size: 14px;
-  transition: all 0.2s;
+  transition: all 0.2s ease-in-out;
 }
 
 .sidebar-link:hover {
@@ -19,13 +34,8 @@
   background-color: rgba(255, 255, 255, 0.15);
   color: white;
 }
-#bodyContent{
-    width:75% !important;
-    margin :1rem auto;
-}
-#expense-dashboard .row .col.dashboard-card{
-    height :100px;
-    border-radius:10px;
-    margin:10px;
-    background-color:#b3b3b3;
+
+.main-content {
+  flex: 1;
+  background-color: #f8f9fa;
 }

@@ -1,11 +1,22 @@
 import { Component } from '@angular/core';
-import { ExpenseListComponent } from '../expense-list/expense-list';
+import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { AuthService } from '../../shared/auth.service';
+
 @Component({
   selector: 'app-layout',
-  imports: [ExpenseListComponent],
+  imports: [RouterLink, RouterLinkActive, RouterOutlet],
   templateUrl: './layout.html',
   styleUrl: './layout.css',
 })
 export class Layout {
-public userName :string ="Rathish";
+  constructor(private auth: AuthService, private router: Router) {}
+
+  get username(): string | null {
+    return this.auth.username;
+  }
+
+  logout(): void {
+    this.auth.logout();
+    this.router.navigate(['/login']);
+  }
 }

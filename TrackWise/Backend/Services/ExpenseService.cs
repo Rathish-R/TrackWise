@@ -11,8 +11,7 @@ public class ExpenseService : IExpenseService
     }
 
     public Task<IEnumerable<Expense>> GetAllAsync() => _repo.GetAllAsync();
-
-    public Task<Expense?> GetByIdAsync(int id) => _repo.GetByIdAsync(id);
+    public Task<Expense?> FindByIdAsync(int id) => _repo.GetByIdAsync(id);
 
     public Task<Expense> CreateAsync(Expense expense) => _repo.AddAsync(expense);
 
@@ -38,4 +37,7 @@ public class ExpenseService : IExpenseService
         await _repo.DeleteAsync(existing);
         return true;
     }
+
+    public Task<IEnumerable<ExpenseDto>> GetFilteredAsync(FilterRequest filterRequest) =>
+        _repo.GetFilteredAsync(filterRequest);
 }

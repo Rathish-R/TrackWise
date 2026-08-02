@@ -7,12 +7,13 @@ public class AppDbContext : DbContext
 
     public DbSet<User> Users { get; set; }
     public DbSet<Expense> Expenses { get; set; }
+    public DbSet<Category> Categories { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<User>().HasKey(u => u.Id);
         modelBuilder.Entity<User>().HasMany(u => u.Expenses).WithOne(e => e.User)
-    .HasForeignKey(e => e.UserId);
+            .HasForeignKey(e => e.UserId);
 
         modelBuilder.Entity<Expense>()
             .HasKey(e => e.Id);
@@ -27,5 +28,6 @@ public class AppDbContext : DbContext
             .WithMany()
             .HasForeignKey(c => c.UserId)
             .IsRequired(false);
+
     }
 }

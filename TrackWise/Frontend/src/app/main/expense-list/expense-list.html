@@ -3,7 +3,7 @@
   <!-- HEADER -->
   <div class="d-flex justify-content-between align-items-center mb-3">
     <h5 class="mb-0">Expenses</h5>
-    <button class="btn btn-primary btn-sm">+ Add Expense</button>
+    <button class="btn btn-primary btn-sm" (click)="onAddExpense()">+ Add Expense</button>
   </div>
 
   <!-- TABLE -->
@@ -28,7 +28,7 @@
               <td>{{ expense.date }}</td>
               <td>
                 <button class="btn btn-sm btn-outline-primary me-1">Edit</button>
-                <button class="btn btn-sm btn-outline-danger">Delete</button>
+                <button class="btn btn-sm btn-outline-danger" (click)="onDelete(expense.id)">Delete</button>
               </td>
             </tr>
           }

@@ -7,7 +7,14 @@
   </div>
 
   <!-- TILED GRID -->
-  @if (categories.length > 0) {
+  @if (isLoading) {
+    <div class="text-center text-muted py-5">
+      <div class="spinner-border text-primary mb-3" role="status">
+        <span class="visually-hidden">Loading categories...</span>
+      </div>
+      <p class="mb-0">Loading categories...</p>
+    </div>
+  } @else if (categories.length > 0) {
     <div class="category-grid">
       @for (category of categories; track category.id) {
         <div class="category-tile" [style.background]="getColor($index)">

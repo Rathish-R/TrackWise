@@ -6,8 +6,8 @@ namespace Backend.Repository;
 
 public class UserRepository : IUserRepository
 {
-    private readonly AppDbContext _context;
-    public UserRepository(AppDbContext context)
+    private readonly HostDbContext _context;
+    public UserRepository(HostDbContext context)
     {
         _context = context;
     }

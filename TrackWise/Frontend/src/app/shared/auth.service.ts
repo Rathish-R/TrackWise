@@ -3,14 +3,15 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { API_BASE_URL } from './api-base-url';
 import { AuthResponse, RegisterRequest } from './model/auth';
-
-const TOKEN_KEY = 'trackwise_token';
-const USER_ID_KEY = 'trackwise_userId';
-const USERNAME_KEY = 'trackwise_username';
+import { SessionService } from './session.service';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  constructor(private http: HttpClient, @Inject(API_BASE_URL) private baseUrl: string) {}
+  constructor(
+    private http: HttpClient,
+    @Inject(API_BASE_URL) private baseUrl: string,
+    private session: SessionService,
+  ) {}
 
   login(username: string, password: string): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(this.baseUrl + '/api/Auth/login', { username, password });
@@ -21,30 +22,35 @@ export class AuthService {
   }
 
   saveSession(auth: AuthResponse): void {
-    localStorage.setItem(TOKEN_KEY, auth.token);
-    localStorage.setItem(USER_ID_KEY, auth.userId);
-    localStorage.setItem(USERNAME_KEY, auth.username);
+    this.session.setSession({
+      token: auth.token,
+      userId: auth.userId,
+      username: auth.username,
+      email: auth.email,
+    });
   }
 
   logout(): void {
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(USER_ID_KEY);
-    localStorage.removeItem(USERNAME_KEY);
+    this.session.clear();
   }
 
   get token(): string | null {
-    return localStorage.getItem(TOKEN_KEY);
+    return this.session.token;
   }
 
-  get userId(): string | null {
-    return localStorage.getItem(USER_ID_KEY);
+  get userId(): number {
+    return this.session.userId;
   }
 
   get username(): string | null {
-    return localStorage.getItem(USERNAME_KEY);
+    return this.session.username;
+  }
+
+  get email(): string | null {
+    return this.session.email;
   }
 
   get isAuthenticated(): boolean {
-    return !!this.token;
+    return this.session.isAuthenticated;
   }
 }

@@ -1,6 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Backend.Data;
 using Backend.Models;
 using Backend.Repository;
 using Microsoft.AspNetCore.Identity;
@@ -36,12 +37,11 @@ public class AuthService : IAuthService
             throw new InvalidOperationException("Email already exists.");
 
         var hash = _passwordHasher.HashPassword(
-            new User { Id = string.Empty, Name = string.Empty, Email = string.Empty, PasswordHash = string.Empty },
+            new User { Name = string.Empty, Email = string.Empty, PasswordHash = string.Empty },
             request.Password);
 
         var user = new User
         {
-            Id = Guid.NewGuid().ToString(),
             Name = request.Username,
             Email = request.Email,
             Country = request.Country,
@@ -49,6 +49,7 @@ public class AuthService : IAuthService
         };
 
         await _userRepository.AddAsync(user);
+        await UserDatabase.EnsureCreatedAsync(user.Name);
         return CreateAuthResponse(user);
     }
 
@@ -58,7 +59,19 @@ public class AuthService : IAuthService
         if (user == null)
             return new LoginResult { Error = UserNotFound };
 
-        var result = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, request.Password);
+        if (string.IsNullOrWhiteSpace(user.PasswordHash))
+            return new LoginResult { Error = InvalidPassword };
+
+        PasswordVerificationResult result;
+        try
+        {
+            result = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, request.Password);
+        }
+        catch (FormatException)
+        {
+            return new LoginResult { Error = InvalidPassword };
+        }
+
         if (result == PasswordVerificationResult.Failed)
             return new LoginResult { Error = InvalidPassword };
 
@@ -84,7 +97,7 @@ public class AuthService : IAuthService
 
         var claims = new[]
         {
-            new Claim(JwtRegisteredClaimNames.Sub, user.Id),
+            new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
             new Claim(JwtRegisteredClaimNames.Name, user.Name),
             new Claim(JwtRegisteredClaimNames.Email, user.Email),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),

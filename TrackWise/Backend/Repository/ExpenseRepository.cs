@@ -15,7 +15,6 @@ public class ExpenseRepository : IExpenseRepository
             ["Amount"] = e => e.Amount,
             ["Date"] = e => e.Date,
             ["CategoryId"] = e => e.CategoryId,
-            ["UserId"] = e => e.UserId,
             ["CategoryName"] = e => e.Category!.Name,
             ["CategoryIcon"] = e => e.Category!.Icon,
         };

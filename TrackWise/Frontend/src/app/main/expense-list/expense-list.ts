@@ -3,14 +3,6 @@ import { Router } from '@angular/router';
 import { ExpenseService } from '../../shared/expense.service';
 import { Expense } from '../../shared/model/expense';
 
-interface ExpenseRow {
-  id: number;
-  title: string;
-  amount: number;
-  category: string;
-  date: string;
-  userId: string;
-}
 
 @Component({
   selector: 'app-expense-list',
@@ -19,8 +11,8 @@ interface ExpenseRow {
   styleUrl: './expense-list.css',
 })
 export class ExpenseListComponent implements OnInit {
-  public expenses: ExpenseRow[] = [];
-
+  public expenses: Expense[] = [];
+  public isLoading:boolean = false;
   constructor(
     private expenseService: ExpenseService,
     private router: Router,
@@ -32,16 +24,13 @@ export class ExpenseListComponent implements OnInit {
   }
 
   loadExpenses(): void {
+    this.isLoading =true;
     this.expenseService.list().subscribe({
       next: (data: Expense[]) => {
-        this.expenses = data.map((e: Expense) => ({
-          id: e.id ?? 0,
-          title: e.title ?? '',
-          amount: e.amount ?? 0,
-          category: e.category?.name ?? 'Uncategorized',
-          date: e.date ? new Date(e.date).toLocaleDateString('en-GB') : '',
-          userId: e.userId ?? '',
-        }));
+        
+         this.isLoading = false;
+         if(data == null) this.expenses=[]
+        this.expenses = data.map((e: Expense) => e);
         this.cdr.detectChanges();
       },
       error: (err: any) => {
@@ -60,5 +49,13 @@ export class ExpenseListComponent implements OnInit {
       next: () => this.loadExpenses(),
       error: (err: any) => console.error('Failed to delete expense', err),
     });
+  }
+  getCategory(category:any){
+    if(category && category!.name){
+      return category!.name!.toString();
+    }
+    else {
+      return "N/A";
+    }
   }
 }

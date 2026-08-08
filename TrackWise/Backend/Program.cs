@@ -1,5 +1,6 @@
 
 using System.Text;
+using System.IO;
 using System.Text.Json.Serialization;
 using Backend.Data;
 using Backend.Models;
@@ -31,6 +32,9 @@ builder.Services.AddCors(options =>
     });
 });
 
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<Backend.Services.ICurrentUserService, Backend.Services.CurrentUserService>();
+
 builder.Services.AddScoped<Backend.Repository.IExpenseRepository, Backend.Repository.ExpenseRepository>();
 builder.Services.AddScoped<Backend.Services.IExpenseService, Backend.Services.ExpenseService>();
 builder.Services.AddScoped<Backend.Repository.ICategoryRepository, Backend.Repository.CategoryRepository>();
@@ -38,6 +42,28 @@ builder.Services.AddScoped<Backend.Services.ICategoryService, Backend.Services.C
 builder.Services.AddScoped<Backend.Repository.IUserRepository, Backend.Repository.UserRepository>();
 builder.Services.AddScoped<Backend.Services.IAuthService, Backend.Services.AuthService>();
 builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
+
+// Ensure a centralized DB folder exists and use it for host DB by default
+var dbRoot = Path.Combine(Directory.GetCurrentDirectory(), "DB");
+Directory.CreateDirectory(dbRoot);
+
+builder.Services.AddDbContext<HostDbContext>(options =>
+{
+    var hostConnection = builder.Configuration.GetConnectionString("HostConnection")
+        ?? $"Data Source={Path.Combine(dbRoot, "host.db")}";
+    options.UseSqlite(hostConnection);
+});
+
+builder.Services.AddScoped<AppDbContext>(sp =>
+{
+    var currentUser = sp.GetRequiredService<Backend.Services.ICurrentUserService>();
+    var username = currentUser.Username
+        ?? throw new InvalidOperationException("No authenticated user for the user database.");
+    var options = new DbContextOptionsBuilder<AppDbContext>()
+        .UseSqlite(UserDatabase.ConnectionString(username))
+        .Options;
+    return new AppDbContext(options);
+});
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -55,21 +81,14 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 Encoding.UTF8.GetBytes(jwt["Key"] ?? string.Empty)),
         };
     });
-builder.Services.AddDbContext<AppDbContext>(options =>{
- IConfiguration configuration = builder.Configuration;
-  string connString = configuration.GetConnectionString("ConnectionStrings.Default") ?? "Data Source=TrackWise.db";
-    options.UseSqlite(connString);
-}
- 
-    );
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
 {
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.Migrate();
+    var hostDb = scope.ServiceProvider.GetRequiredService<HostDbContext>();
+    hostDb.Database.EnsureCreated();
 }
 
 // Configure the HTTP request pipeline.

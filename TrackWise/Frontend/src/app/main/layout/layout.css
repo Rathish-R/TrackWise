@@ -12,7 +12,9 @@
   background-color: #16213e;
   border-right: 1px solid rgba(255, 255, 255, 0.08);
 }
-
+.dropdown-menu{
+  min-width: 300px;
+}
 .sidebar-link {
   display: flex;
   align-items: center;

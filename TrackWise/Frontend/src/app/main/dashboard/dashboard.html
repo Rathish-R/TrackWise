@@ -1,0 +1,79 @@
+<div class="dashboard-grid">
+  <div class="dashboard-card dashboard-card-small">
+    <div class="card-header d-flex align-items-center justify-content-between">
+      <div>
+        <h6 class="mb-1">Total Spent</h6>
+        <p class="text-muted mb-0">This month</p>
+      </div>
+      <button
+        type="button"
+        class="btn btn-sm btn-outline-secondary"
+        (click)="toggleMenu('total')"
+        aria-label="Chart menu"
+      >
+        <i class="bi bi-three-dots-vertical"></i>
+      </button>
+    </div>
+
+    <div class="card-body">
+      <div class="metric-value">
+        <span class="currency">$</span>
+        <span>{{ totalAmount | number:'1.0-2' }}</span>
+      </div>
+    </div>
+
+    <div *ngIf="menuOpen.total" class="chart-menu shadow-sm rounded">
+      <div class="chart-menu-item">Customize chart</div>
+    </div>
+  </div>
+
+  <div class="dashboard-card dashboard-card-large">
+    <div class="card-header d-flex align-items-center justify-content-between">
+      <div>
+        <h6 class="mb-1">Category Spend</h6>
+        <p class="text-muted mb-0">Expense distribution</p>
+      </div>
+      <button
+        type="button"
+        class="btn btn-sm btn-outline-secondary"
+        (click)="toggleMenu('categories')"
+        aria-label="Chart menu"
+      >
+        <i class="bi bi-three-dots-vertical"></i>
+      </button>
+    </div>
+
+    <div class="card-body chart-container">
+      <div id="pieChartContainer" style="width:100%;height:100%;min-height:260px"></div>
+    </div>
+
+    <div *ngIf="menuOpen.categories" class="chart-menu shadow-sm rounded">
+      <div class="chart-menu-item">Customize chart</div>
+    </div>
+  </div>
+
+  <div class="dashboard-card dashboard-card-full">
+    <div class="card-header d-flex align-items-center justify-content-between">
+      <div>
+        <h6 class="mb-1">Monthly Trend</h6>
+        <p class="text-muted mb-0">Expenses over the year</p>
+      </div>
+      <button
+        type="button"
+        class="btn btn-sm btn-outline-secondary"
+        (click)="toggleMenu('activity')"
+        aria-label="Chart menu"
+      >
+        <i class="bi bi-three-dots-vertical"></i>
+      </button>
+    </div>
+
+    <div class="card-body chart-container">
+      <div id="lineChartContainer" style="width:100%;height:100%;min-height:320px"></div>
+    </div>
+
+    <div *ngIf="menuOpen.activity" class="chart-menu shadow-sm rounded">
+      <div class="chart-menu-item">Customize chart</div>
+    </div>
+  </div>
+</div>

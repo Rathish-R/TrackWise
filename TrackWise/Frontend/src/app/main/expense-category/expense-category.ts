@@ -12,6 +12,7 @@ import { ColorHelper } from './color-helper';
 })
 export class ExpenseCategoryComponent implements OnInit {
   public categories: Category[] = [];
+  public isLoading = false;
 
   constructor(
     private categoryService: CategoryService,
@@ -19,10 +20,12 @@ export class ExpenseCategoryComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.isLoading = true;
     this.categoryService.list().subscribe({
       next: (data: Category[]) => {
         if (data) {
           this.categories = data;
+          this.isLoading = false;
           this.cdr.detectChanges();
           console.log(this.categories);
         }
@@ -30,6 +33,8 @@ export class ExpenseCategoryComponent implements OnInit {
       error: (err: any) => {
         console.error('Failed to load categories', err);
         this.categories = [];
+        this.isLoading = false;
+        this.cdr.detectChanges();
       },
     });
   }

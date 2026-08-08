@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { LoginComponent } from './login/login';
+import { RegisterComponent } from './register/register';
 import { DashboardComponent } from './main/dashboard/dashboard';
 import { ExpenseListComponent } from './main/expense-list/expense-list';
 import { ExpenseCategoryComponent } from './main/expense-category/expense-category';
@@ -9,6 +10,7 @@ import { authGuard } from './shared/auth.guard';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
+  { path: 'register', component: RegisterComponent },
   {
     path: '',
     component: Main,

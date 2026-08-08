@@ -6,7 +6,5 @@ public class Expense
     public decimal Amount { get; set; }
     public Category? Category { get; set; }
     public required DateTime Date { get; set; }
-    public User User { get; set; } = null!;
     public string CategoryId { get; set; } = string.Empty;
-    public string UserId { get; set; } = string.Empty;
 }

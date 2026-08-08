@@ -13,6 +13,11 @@
 .dotnet
 *.db
 
+.vscode/
+
+# Ignore the centralized database folder
+DB/
+
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 

@@ -8,7 +8,14 @@
 
   <!-- TABLE -->
   <div class="table-responsive">
-    @if (expenses.length > 0) {
+    @if (isLoading) {
+      <div class="text-center text-muted py-5">
+        <div class="spinner-border text-primary mb-3" role="status">
+          <span class="visually-hidden">Loading expenses...</span>
+        </div>
+        <p class="mb-0">Loading expenses...</p>
+      </div>
+    } @else if (expenses.length > 0) {
       <table class="table table-striped">
         <thead>
           <tr>
@@ -23,12 +30,12 @@
           @for (expense of expenses; track expense.id) {
             <tr>
               <td>{{ expense.title }}</td>
-              <td>{{ expense.category }}</td>
+              <td>{{getCategory(expense.category!) }}</td>
               <td>₹{{ expense.amount }}</td>
               <td>{{ expense.date }}</td>
               <td>
                 <button class="btn btn-sm btn-outline-primary me-1">Edit</button>
-                <button class="btn btn-sm btn-outline-danger" (click)="onDelete(expense.id)">Delete</button>
+                <button class="btn btn-sm btn-outline-danger" (click)="onDelete(expense.id!)">Delete</button>
               </td>
             </tr>
           }

@@ -1,5 +1,4 @@
 import { Category } from './category';
-import { User } from './user';
 
 export interface Expense {
   id?: number;
@@ -7,7 +6,6 @@ export interface Expense {
   amount: number;
   category?: Category | null;
   date: string;
-  user?: User | null;
   categoryId?: string;
-  userId?: string;
+  userId:number;
 }

@@ -8,5 +8,4 @@ public class ExpenseDto
     public string? CategoryName { get; set; }
     public string? CategoryIcon { get; set; }
     public DateTime Date { get; set; }
-    public string UserId { get; set; } = string.Empty;
 }

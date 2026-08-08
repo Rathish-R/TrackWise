@@ -36,6 +36,12 @@ export class AddExpenseComponent implements OnInit {
     this.categoryService.list().subscribe({
       next: (cats: Category[]) => (this.categories = cats),
     });
+
+    // Ensure we have a valid user id; if not, force login
+    if (!this.auth.userId) {
+      this.router.navigate(['/login']);
+      return;
+    }
   }
 
   onSubmit(): void {
@@ -47,7 +53,7 @@ export class AddExpenseComponent implements OnInit {
       amount: formVal.amount!,
       categoryId: formVal.categoryId!,
       date: formVal.date!,
-      userId: this.auth.userId ?? 'user1',
+      userId: this.auth.userId,
     };
 
     this.expenseService.create(expense).subscribe({

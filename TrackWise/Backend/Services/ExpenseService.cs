@@ -24,7 +24,6 @@ public class ExpenseService : IExpenseService
         existing.Amount = expense.Amount;
         existing.Date = expense.Date;
         existing.CategoryId = expense.CategoryId;
-        existing.UserId = expense.UserId;
 
         await _repo.UpdateAsync(existing);
         return true;

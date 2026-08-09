@@ -69,4 +69,19 @@ public class ExpenseRepository : IExpenseRepository
 
         return await projected.OrderByDescending(e => e.Date).ToListAsync();
     }
+
+    public async Task<decimal> GetTotalByMonthAsync(int month)
+    {
+        if (month < 1 || month > 12) return 0m;
+
+        var now = DateTime.Now;
+        var start = new DateTime(now.Year, month, 1);
+        var end = start.AddMonths(1);
+
+        var total = await _context.Expenses
+            .Where(e => e.Date >= start && e.Date < end)
+            .SumAsync(e => (decimal?)e.Amount) ?? 0m;
+
+        return total;
+    }
 }

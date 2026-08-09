@@ -39,4 +39,7 @@ public class ExpenseService : IExpenseService
 
     public Task<IEnumerable<ExpenseDto>> GetFilteredAsync(FilterRequest filterRequest) =>
         _repo.GetFilteredAsync(filterRequest);
+
+    public Task<decimal> GetTotalByMonthAsync(int month) =>
+        _repo.GetTotalByMonthAsync(month);
 }

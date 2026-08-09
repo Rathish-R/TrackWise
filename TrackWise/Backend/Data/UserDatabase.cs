@@ -30,20 +30,20 @@ public static class UserDatabase
         return $"Data Source={filePath}";
     }
 
-    public static async Task EnsureCreatedAsync(string username)
+    public static void EnsureCreated(string username)
     {
         // ConnectionString will create the per-user folder if necessary
         var options = new DbContextOptionsBuilder<AppDbContext>()
             .UseSqlite(ConnectionString(username))
             .Options;
 
-        await using var db = new AppDbContext(options);
-        await db.Database.EnsureCreatedAsync();
+        using var db = new AppDbContext(options);
+        db.Database.EnsureCreated();
 
-        if (!await db.Categories.AnyAsync())
+        if (!db.Categories.Any())
         {
             db.Categories.AddRange(DefaultCategories.All);
-            await db.SaveChangesAsync();
+            db.SaveChanges();
         }
     }
 }

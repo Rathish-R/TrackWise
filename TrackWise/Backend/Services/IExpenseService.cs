@@ -8,4 +8,5 @@ public interface IExpenseService
     Task<bool> UpdateAsync(int id, Expense expense);
     Task<bool> DeleteAsync(int id);
     Task<IEnumerable<ExpenseDto>> GetFilteredAsync(FilterRequest filterRequest);
+    Task<decimal> GetTotalByMonthAsync(int month);
 }

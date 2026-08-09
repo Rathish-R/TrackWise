@@ -14,6 +14,11 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   private pieChart?: Highcharts.Chart;
   private lineChart?: Highcharts.Chart;
   public totalAmount = 0;
+  public loading = {
+    categories: false,
+    activity: false,
+    total: false,
+  };
   public menuOpen = {
     total: false,
     categories: false,
@@ -105,14 +110,23 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   constructor(private expenseService: ExpenseService) {}
 
   ngOnInit(): void {
-    // Load real expense data
-    this.expenseService.list().subscribe({
-      next: (expenses: Expense[]) =>{
-        // this.expenses
+    // Load real expense data for charts (categories for current month)
+    const currentMonth = new Date().getMonth() + 1;
+    this.loadTotalForMonth(currentMonth);
+  }
+
+  private loadTotalForMonth(month: number): void {
+    this.loading.total = true;
+    this.expenseService.getAmountByMonth(month).subscribe({
+      next: (total) => {
+        this.totalAmount = total ?? 0;
       },
       error: () => {
-        // keep placeholders on error
+        // keep placeholder on error
       },
+      complete: () => {
+        this.loading.total = false;
+      }
     });
   }
 

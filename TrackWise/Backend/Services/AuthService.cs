@@ -49,7 +49,7 @@ public class AuthService : IAuthService
         };
 
         await _userRepository.AddAsync(user);
-        await UserDatabase.EnsureCreatedAsync(user.Name);
+        UserDatabase.EnsureCreated(user.Name);
         return CreateAuthResponse(user);
     }
 

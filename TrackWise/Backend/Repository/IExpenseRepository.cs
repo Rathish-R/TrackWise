@@ -9,4 +9,5 @@ public interface IExpenseRepository
     Task UpdateAsync(Expense expense);
     Task DeleteAsync(Expense expense);
     Task<IEnumerable<ExpenseDto>> GetFilteredAsync(FilterRequest request);
+    Task<decimal> GetTotalByMonthAsync(int month);
 }

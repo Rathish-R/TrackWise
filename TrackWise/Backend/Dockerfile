@@ -1,11 +1,11 @@
-# Stage 1 build
+# Stage 1: build
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-WORKDIR src
+WORKDIR /src
 COPY . .
-RUN dotnet publish -c Release -o apppublish
+RUN dotnet publish -c Release -o /app/publish
 
-# Stage 2 run
+# Stage 2: run
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
-WORKDIR app
-COPY --from=build apppublish .
-ENTRYPOINT [dotnet, Backend.dll]
+WORKDIR /app
+COPY --from=build /app/publish .
+ENTRYPOINT ["dotnet", "Backend.dll"]

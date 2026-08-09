@@ -2,7 +2,6 @@ import { Component, OnInit, AfterViewInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import * as Highcharts from 'highcharts';
 import { ExpenseService } from '../../shared/expense.service';
-import { Expense } from '../../shared/model/expense';
 @Component({
   selector: 'app-dashboard',
   standalone: true,

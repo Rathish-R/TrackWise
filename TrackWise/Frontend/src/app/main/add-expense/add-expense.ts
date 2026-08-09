@@ -5,7 +5,7 @@ import { ExpenseService } from '../../shared/expense.service';
 import { CategoryService } from '../../shared/category.service';
 import { AuthService } from '../../shared/auth.service';
 import { Category } from '../../shared/model/category';
-import { Expense } from '../../shared/model/expense';
+import { Expense } from '../../shared/model/Expense';
 
 @Component({
   selector: 'app-add-expense',

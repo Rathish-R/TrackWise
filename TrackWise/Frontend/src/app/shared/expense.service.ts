@@ -2,7 +2,7 @@ import { Injectable, Inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { API_BASE_URL } from './api-base-url';
-import { Expense } from './model/expense';
+import { Expense } from './model/Expense';
 
 @Injectable({ providedIn: 'root' })
 export class ExpenseService {

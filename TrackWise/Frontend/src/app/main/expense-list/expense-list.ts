@@ -1,7 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { ExpenseService } from '../../shared/expense.service';
-import { Expense } from '../../shared/model/expense';
+import { Expense } from '../../shared/model/Expense';
 
 
 @Component({

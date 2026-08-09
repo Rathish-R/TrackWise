@@ -1,4 +1,3 @@
-
 using System.Text;
 using System.IO;
 using System.Text.Json.Serialization;
@@ -57,8 +56,8 @@ builder.Services.AddDbContext<HostDbContext>(options =>
 builder.Services.AddScoped<AppDbContext>(sp =>
 {
     var currentUser = sp.GetRequiredService<Backend.Services.ICurrentUserService>();
-    var username = currentUser.Username
-        ?? throw new InvalidOperationException("No authenticated user for the user database.");
+    var username = currentUser.Username ?? "public";
+    UserDatabase.EnsureCreated(username);
     var options = new DbContextOptionsBuilder<AppDbContext>()
         .UseSqlite(UserDatabase.ConnectionString(username))
         .Options;
@@ -85,18 +84,18 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
+// Bind to Render's assigned port at runtime, falling back to 8080 locally
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+app.Urls.Add($"http://0.0.0.0:{port}");
+
 using (var scope = app.Services.CreateScope())
 {
     var hostDb = scope.ServiceProvider.GetRequiredService<HostDbContext>();
     hostDb.Database.EnsureCreated();
 }
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseCors("AllowFrontend");
 app.UseHttpsRedirection();

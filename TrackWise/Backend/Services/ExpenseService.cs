@@ -42,4 +42,10 @@ public class ExpenseService : IExpenseService
 
     public Task<decimal> GetTotalByMonthAsync(int month) =>
         _repo.GetTotalByMonthAsync(month);
+
+    public Task<IEnumerable<CategoryAmountDto>> GetExpensesByCategoryAsync(int month) =>
+        _repo.GetExpensesByCategoryAsync(month);
+
+    public Task<IEnumerable<MonthlyAmountDto>> GetMonthlyTotalsAsync(int year) =>
+        _repo.GetMonthlyTotalsAsync(year);
 }

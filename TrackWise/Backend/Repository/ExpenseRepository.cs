@@ -78,10 +78,59 @@ public class ExpenseRepository : IExpenseRepository
         var start = new DateTime(now.Year, month, 1);
         var end = start.AddMonths(1);
 
-        var total = await _context.Expenses
+        var expenses = await _context.Expenses
             .Where(e => e.Date >= start && e.Date < end)
-            .SumAsync(e => (decimal?)e.Amount) ?? 0m;
+            .ToListAsync();
 
-        return total;
+        return expenses.Sum(e => e.Amount);
+    }
+
+    public async Task<IEnumerable<CategoryAmountDto>> GetExpensesByCategoryAsync(int month)
+    {
+        if (month < 1 || month > 12) return new List<CategoryAmountDto>();
+
+        var now = DateTime.Now;
+        var start = new DateTime(now.Year, month, 1);
+        var end = start.AddMonths(1);
+
+        var expenses = await _context.Expenses
+            .Where(e => e.Date >= start && e.Date < end)
+            .Include(e => e.Category)
+            .ToListAsync();
+
+        var categoryAmounts = expenses
+            .GroupBy(e => e.Category?.Name ?? "Uncategorized")
+            .Select(g => new CategoryAmountDto
+            {
+                Category = g.Key,
+                Amount = g.Sum(e => e.Amount)
+            })
+            .ToList();
+
+        return categoryAmounts;
+    }
+
+    public async Task<IEnumerable<MonthlyAmountDto>> GetMonthlyTotalsAsync(int year)
+    {
+        if (year < 2000 || year > 3000) return new List<MonthlyAmountDto>();
+
+        var start = new DateTime(year, 1, 1);
+        var end = start.AddYears(1);
+
+        var expenses = await _context.Expenses
+            .Where(e => e.Date >= start && e.Date < end)
+            .ToListAsync();
+
+        var groupedByMonth = expenses
+            .GroupBy(e => e.Date.Month)
+            .ToDictionary(g => g.Key, g => g.Sum(e => e.Amount));
+
+        return Enumerable.Range(1, 12)
+            .Select(month => new MonthlyAmountDto
+            {
+                Month = month,
+                Amount = groupedByMonth.TryGetValue(month, out var amount) ? amount : 0m
+            })
+            .ToList();
     }
 }

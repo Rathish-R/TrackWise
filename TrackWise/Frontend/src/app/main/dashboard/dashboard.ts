@@ -1,7 +1,9 @@
 import { Component, OnInit, AfterViewInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { finalize } from 'rxjs';
 import * as Highcharts from 'highcharts';
 import { ExpenseService } from '../../shared/expense.service';
+import { Expense } from '../../shared/model/Expense';
 @Component({
   selector: 'app-dashboard',
   standalone: true,
@@ -28,7 +30,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     chart: {
       type: 'pie',
       backgroundColor: 'transparent',
-      height: 320,
+      height: 240,
     },
     title: {
       text: undefined,
@@ -112,37 +114,128 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     // Load real expense data for charts (categories for current month)
     const currentMonth = new Date().getMonth() + 1;
     this.loadTotalForMonth(currentMonth);
+    this.loadExpensesByCategory(currentMonth);
+    this.loadExpensesByMonth();
   }
 
   private loadTotalForMonth(month: number): void {
     this.loading.total = true;
-    this.expenseService.getAmountByMonth(month).subscribe({
-      next: (total) => {
-        this.totalAmount = total ?? 0;
+    this.expenseService.getAmountByMonth(month)
+      .pipe(finalize(() => (this.loading.total = false)))
+      .subscribe({
+        next: (total) => {
+          this.totalAmount = total ?? 0;
+        },
+        error: (err) => {
+          console.error('Error loading total amount:', err);
+          this.totalAmount = 0;
+        },
+      });
+  }
+
+  private loadExpensesByCategory(month: number): void {
+    this.loading.categories = true;
+    this.expenseService
+      .getExpensesByCategory(month)
+      .pipe(finalize(() => (this.loading.categories = false)))
+      .subscribe({
+        next: (categoryData) => {
+          try {
+            // Transform the data for Highcharts pie chart
+            const chartData = categoryData.map((item: any) => {
+              const categoryName = item.category || item.Category || 'Unknown';
+              const amount = item.amount || item.Amount || 0;
+              return {
+                name: categoryName,
+                y: typeof amount === 'number' ? parseFloat(amount.toFixed(2)) : 0,
+              };
+            });
+
+            if (chartData && chartData.length > 0) {
+              // Update pie chart options
+              this.pieChartOptions = {
+                ...this.pieChartOptions,
+                series: [
+                  {
+                    type: 'pie',
+                    name: 'Expenses',
+                    data: chartData as any,
+                  },
+                ],
+              };
+
+              // If chart is already rendered, update it
+              if (this.pieChart && this.pieChart.series && this.pieChart.series[0]) {
+                this.pieChart.series[0].setData(chartData as any, true);
+              }
+            }
+          } catch (error) {
+            console.error('Error transforming category data:', error);
+          }
+        },
+        error: (err) => {
+          console.error('Error loading expenses by category:', err);
+        },
+      });
+  }
+
+  private loadExpensesByMonth(): void {
+    this.loading.activity = true;
+    this.expenseService.getExpensesByMonth().subscribe({
+      next: (monthlyData) => {
+        try {
+          const chartData = monthlyData.map((item: any) => {
+            const amount = item.amount || item.Amount || 0;
+            return typeof amount === 'number' ? parseFloat(amount.toFixed(2)) : 0;
+          });
+
+          if (chartData && chartData.length > 0) {
+            this.lineChartOptions = {
+              ...this.lineChartOptions,
+              series: [
+                {
+                  type: 'line',
+                  name: 'Expenses',
+                  data: chartData,
+                  color: '#3b82f6',
+                },
+              ],
+            };
+
+            if (this.lineChart && this.lineChart.series && this.lineChart.series[0]) {
+              this.lineChart.series[0].setData(chartData, true);
+            }
+          }
+        } catch (error) {
+          console.error('Error transforming monthly data:', error);
+        }
+        this.loading.activity = false;
       },
-      error: () => {
-        // keep placeholder on error
+      error: (err) => {
+        console.error('Error loading expenses by month:', err);
+        this.loading.activity = false;
       },
       complete: () => {
-        this.loading.total = false;
+        this.loading.activity = false;
       }
     });
   }
 
   ngAfterViewInit(): void {
     // Create charts directly into DOM containers
-    try {
-      this.pieChart = Highcharts.chart('pieChartContainer', this.pieChartOptions as any);
-    } catch (e) {
-      // ignore render errors in non-browser environments
-      // console.warn('Pie chart render failed', e);
-    }
+    setTimeout(() => {
+      try {
+        this.pieChart = Highcharts.chart('pieChartContainer', this.pieChartOptions as any);
+      } catch (e) {
+        console.warn('Pie chart render failed', e);
+      }
 
-    try {
-      this.lineChart = Highcharts.chart('lineChartContainer', this.lineChartOptions as any);
-    } catch (e) {
-      // console.warn('Line chart render failed', e);
-    }
+      try {
+        this.lineChart = Highcharts.chart('lineChartContainer', this.lineChartOptions as any);
+      } catch (e) {
+        console.warn('Line chart render failed', e);
+      }
+    }, 0);
   }
 
   ngOnDestroy(): void {

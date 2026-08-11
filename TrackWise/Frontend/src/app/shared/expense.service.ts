@@ -37,4 +37,17 @@ export class ExpenseService {
   getAmountByMonth(month: number) {
     return this.http.get<number>(this.baseUrl + '/api/Dashboard/getAmountByMonth?month=' + month);
   }
+
+  getExpensesByCategory(month: number) {
+    return this.http.get<Array<{ category: string; amount: number }>>(
+      this.baseUrl + '/api/Dashboard/getExpensesByCategory?month=' + month
+    );
+  }
+
+  getExpensesByMonth(year?: number) {
+    const params = year ? '?year=' + year : '';
+    return this.http.get<Array<{ month: number; amount: number }>>(
+      this.baseUrl + '/api/Dashboard/getExpensesByMonth' + params
+    );
+  }
 }

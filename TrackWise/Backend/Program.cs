@@ -93,7 +93,7 @@ builder.Services.AddSwaggerGen();
 var app = builder.Build();
 
 // Bind to Render's assigned port at runtime, falling back to 8080 locally
-var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+var port = Environment.GetEnvironmentVariable("PORT") ?? "5204";
 app.Urls.Add($"http://0.0.0.0:{port}");
 
 using (var scope = app.Services.CreateScope())

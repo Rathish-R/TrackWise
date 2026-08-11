@@ -9,4 +9,6 @@ public interface IExpenseService
     Task<bool> DeleteAsync(int id);
     Task<IEnumerable<ExpenseDto>> GetFilteredAsync(FilterRequest filterRequest);
     Task<decimal> GetTotalByMonthAsync(int month);
+    Task<IEnumerable<CategoryAmountDto>> GetExpensesByCategoryAsync(int month);
+    Task<IEnumerable<MonthlyAmountDto>> GetMonthlyTotalsAsync(int year);
 }

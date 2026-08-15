@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, AfterViewInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { finalize } from 'rxjs';
 import * as Highcharts from 'highcharts';
@@ -58,11 +58,6 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         type: 'pie',
         name: 'Expenses',
         data: [
-          { name: 'Food', y: 34.2 },
-          { name: 'Transport', y: 22.1 },
-          { name: 'Shopping', y: 18.7 },
-          { name: 'Bills', y: 14.0 },
-          { name: 'Other', y: 11.0 },
         ],
       },
     ],
@@ -102,13 +97,13 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       {
         type: 'line',
         name: 'Expenses',
-        data: [980, 1250, 1120, 1350, 1500, 1400, 1520, 1680, 1800, 1720, 1840, 1950],
+        data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         color: '#3b82f6',
       },
     ],
   };
 
-  constructor(private expenseService: ExpenseService) {}
+  constructor(private expenseService: ExpenseService,private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
     // Load real expense data for charts (categories for current month)
@@ -121,14 +116,16 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   private loadTotalForMonth(month: number): void {
     this.loading.total = true;
     this.expenseService.getAmountByMonth(month)
-      .pipe(finalize(() => (this.loading.total = false)))
       .subscribe({
         next: (total) => {
-          this.totalAmount = total ?? 0;
+          this.totalAmount = total ?? 0;this.loading.total = false
+
+          this.cdr.detectChanges();
         },
         error: (err) => {
           console.error('Error loading total amount:', err);
-          this.totalAmount = 0;
+          this.totalAmount = 0;this.loading.total = false
+          this.cdr.detectChanges();
         },
       });
   }
@@ -137,19 +134,19 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     this.loading.categories = true;
     this.expenseService
       .getExpensesByCategory(month)
-      .pipe(finalize(() => (this.loading.categories = false)))
       .subscribe({
         next: (categoryData) => {
           try {
             // Transform the data for Highcharts pie chart
             const chartData = categoryData.map((item: any) => {
               const categoryName = item.category || item.Category || 'Unknown';
-              const amount = item.amount || item.Amount || 0;
-              return {
-                name: categoryName,
-                y: typeof amount === 'number' ? parseFloat(amount.toFixed(2)) : 0,
-              };
+              const raw = item.amount ?? item.Amount ?? 0;
+              const amountNum = typeof raw === 'number' ? raw : Number(raw);
+              const y = Number.isFinite(amountNum) ? parseFloat(amountNum.toFixed(2)) : 0;
+              return { name: categoryName, y };
             });
+            this.loading.categories = false;
+            this.cdr.detectChanges();
 
             if (chartData && chartData.length > 0) {
               // Update pie chart options
@@ -168,25 +165,33 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
               if (this.pieChart && this.pieChart.series && this.pieChart.series[0]) {
                 this.pieChart.series[0].setData(chartData as any, true);
               }
+              // Ensure charts are created/updated in DOM
+              this.loadChanges();
+              this.cdr.detectChanges();
             }
           } catch (error) {
             console.error('Error transforming category data:', error);
+              this.loading.categories = false;
+              this.cdr.detectChanges();
           }
         },
         error: (err) => {
           console.error('Error loading expenses by category:', err);
+          this.loading.categories = false;
+          this.cdr.detectChanges();
         },
       });
   }
 
   private loadExpensesByMonth(): void {
-    this.loading.activity = true;
+              this.cdr.detectChanges();
     this.expenseService.getExpensesByMonth().subscribe({
       next: (monthlyData) => {
         try {
           const chartData = monthlyData.map((item: any) => {
-            const amount = item.amount || item.Amount || 0;
-            return typeof amount === 'number' ? parseFloat(amount.toFixed(2)) : 0;
+            const raw = item.amount ?? item.Amount ?? 0;
+            const num = typeof raw === 'number' ? raw : Number(raw);
+            return Number.isFinite(num) ? parseFloat(num.toFixed(2)) : 0;
           });
 
           if (chartData && chartData.length > 0) {
@@ -205,18 +210,24 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
             if (this.lineChart && this.lineChart.series && this.lineChart.series[0]) {
               this.lineChart.series[0].setData(chartData, true);
             }
+            // Update/create charts inside DOM
+            this.loadChanges();
+            this.cdr.detectChanges();
           }
         } catch (error) {
           console.error('Error transforming monthly data:', error);
         }
         this.loading.activity = false;
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Error loading expenses by month:', err);
         this.loading.activity = false;
+        this.cdr.detectChanges();
       },
       complete: () => {
         this.loading.activity = false;
+        this.cdr.detectChanges();
       }
     });
   }
@@ -224,18 +235,53 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   ngAfterViewInit(): void {
     // Create charts directly into DOM containers
     setTimeout(() => {
-      try {
-        this.pieChart = Highcharts.chart('pieChartContainer', this.pieChartOptions as any);
-      } catch (e) {
-        console.warn('Pie chart render failed', e);
+      this.loadChanges();
+    }, 0);
+  }
+
+  // Centralized chart creation/update helper
+  private loadChanges(): void {
+    try {
+      // Pie chart container
+      const pieEl = document.getElementById('pieChartContainer');
+      if (pieEl) {
+        try {
+          if (!this.pieChart) {
+            this.pieChart = Highcharts.chart(pieEl as any, this.pieChartOptions as any);
+          } else if (this.pieChartOptions && this.pieChartOptions.series && this.pieChart.series[0]) {
+            const newSeries = (this.pieChartOptions.series as Highcharts.SeriesOptionsType[])[0];
+            if (newSeries && Array.isArray((newSeries as any).data)) {
+              (this.pieChart.series[0] as Highcharts.Series).setData((newSeries as any).data, true);
+            } else {
+              (this.pieChart.series[0] as Highcharts.Series).update(newSeries, true);
+            }
+          }
+        } catch (e) {
+          console.warn('Pie chart render/update failed', e);
+        }
       }
 
-      try {
-        this.lineChart = Highcharts.chart('lineChartContainer', this.lineChartOptions as any);
-      } catch (e) {
-        console.warn('Line chart render failed', e);
+      // Line chart container
+      const lineEl = document.getElementById('lineChartContainer');
+      if (lineEl) {
+        try {
+          if (!this.lineChart) {
+            this.lineChart = Highcharts.chart(lineEl as any, this.lineChartOptions as any);
+          } else if (this.lineChartOptions && this.lineChartOptions.series && this.lineChart.series[0]) {
+            const newSeries = (this.lineChartOptions.series as Highcharts.SeriesOptionsType[])[0];
+            if (newSeries && Array.isArray((newSeries as any).data)) {
+              (this.lineChart.series[0] as Highcharts.Series).setData((newSeries as any).data, true);
+            } else {
+              (this.lineChart.series[0] as Highcharts.Series).update(newSeries, true);
+            }
+          }
+        } catch (e) {
+          console.warn('Line chart render/update failed', e);
+        }
       }
-    }, 0);
+    } finally {
+      this.cdr.detectChanges();
+    }
   }
 
   ngOnDestroy(): void {

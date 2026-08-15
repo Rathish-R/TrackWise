@@ -3,34 +3,7 @@
     <span class="navbar-brand fw-semibold mb-0">
       <i class="bi bi-wallet2 me-2"></i>Track Wise
     </span>
-    <div class="ms-auto dropdown">
-      <button
-        class="btn btn-sm btn-outline-light dropdown-toggle"
-        type="button"
-        id="userMenuButton"
-        data-bs-toggle="dropdown"
-        aria-expanded="false"
-      >
-        <i class="bi bi-person-circle me-1"></i>{{ username }}
-      </button>
-      <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenuButton">
-        <li class="px-3 py-2">
-          <strong>{{ username }}</strong>
-          <div class="text-muted small">Signed in</div>
-        </li>
-        <li><hr class="dropdown-divider" /></li>
-        <li class="dropdown-item-text">
-          <div><strong>User Details</strong></div>
-          <div class="small text-muted">Email: {{ email }}</div>
-        </li>
-        <li><hr class="dropdown-divider" /></li>
-        <li>
-          <button class="dropdown-item text-danger" type="button" (click)="logout()">
-            <i class="bi bi-box-arrow-right me-2"></i>Logout
-          </button>
-        </li>
-      </ul>
-    </div>
+    <app-user-badge [username]="username" [email]="email" (logout)="logout()"></app-user-badge>
   </nav>
 
   <div class="content-area d-flex flex-grow-1 overflow-hidden">

@@ -1,10 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../shared/auth.service';
+import { UserBadgeComponent } from './user-badge.component';
 
 @Component({
   selector: 'app-layout',
-  imports: [RouterLink, RouterLinkActive, RouterOutlet],
+  standalone: true,
+  imports: [RouterLink, RouterLinkActive, RouterOutlet, UserBadgeComponent],
   templateUrl: './layout.html',
   styleUrl: './layout.css',
 })

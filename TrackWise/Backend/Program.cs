@@ -49,6 +49,10 @@ builder.Services.AddScoped<Backend.Services.ICategoryService, Backend.Services.C
 builder.Services.AddScoped<Backend.Repository.IUserRepository, Backend.Repository.UserRepository>();
 builder.Services.AddScoped<Backend.Services.IAuthService, Backend.Services.AuthService>();
 builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
+builder.Services.Configure<PasswordHasherOptions>(options =>
+{
+    options.IterationCount = 10_000;
+});
 
 // Ensure a centralized DB folder exists and use it for host DB by default
 var dbRoot = Path.Combine(Directory.GetCurrentDirectory(), "DB");
@@ -76,16 +80,24 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
         var jwt = builder.Configuration.GetSection("Jwt");
+        var jwtKey = jwt["Key"];
+        if (builder.Environment.IsProduction() &&
+            (string.IsNullOrWhiteSpace(jwtKey) || jwtKey == "TrackWise-Dev-Secret-Key-2026-Change-Me-In-Production"))
+        {
+            throw new InvalidOperationException(
+                "Jwt:Key must be overridden with a strong secret in production (set the Jwt__Key environment variable).");
+        }
+
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
             ValidateAudience = true,
-            ValidateLifetime = false,
+            ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
             ValidIssuer = jwt["Issuer"],
             ValidAudience = jwt["Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(jwt["Key"] ?? string.Empty)),
+                Encoding.UTF8.GetBytes(jwtKey ?? string.Empty)),
         };
     });
 builder.Services.AddSwaggerGen();
@@ -99,7 +111,7 @@ app.Urls.Add($"http://0.0.0.0:{port}");
 using (var scope = app.Services.CreateScope())
 {
     var hostDb = scope.ServiceProvider.GetRequiredService<HostDbContext>();
-    hostDb.Database.EnsureCreated();
+    hostDb.Database.Migrate();
 }
 
 app.UseSwagger();

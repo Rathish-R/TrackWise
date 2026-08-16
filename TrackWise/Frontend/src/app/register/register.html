@@ -48,11 +48,19 @@
           <label class="form-label">Country</label>
           <ng-select
             [items]="countries"
+            bindLabel="name"
             formControlName="country"
             [searchable]="true"
             [clearable]="true"
             placeholder="Select your country"
-          ></ng-select>
+          >
+            <ng-template ng-option-tmp let-item="item">
+              <div class="d-flex justify-content-between align-items-center">
+                <span>{{ item.name }}</span>
+                <span class="badge text-bg-light ms-3">{{ item.currency }}</span>
+              </div>
+            </ng-template>
+          </ng-select>
         </div>
 
         <div class="mb-3">
@@ -102,7 +110,12 @@
         }
 
         <button type="submit" class="btn btn-primary w-100" [disabled]="form.invalid || submitting">
-          {{ submitting ? 'Please wait...' : 'Sign Up' }}
+          @if (submitting) {
+            <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+            Creating account...
+          } @else {
+            Sign Up
+          }
         </button>
       </form>
 

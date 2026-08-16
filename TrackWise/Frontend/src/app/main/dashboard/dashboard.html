@@ -3,37 +3,96 @@
     <div class="card-header d-flex align-items-center justify-content-between">
       <div>
         <h6 class="mb-1">Total Spent</h6>
-        <p class="text-muted mb-0">This month</p>
       </div>
-      <button
-        type="button"
-        class="btn btn-sm btn-outline-secondary"
-        (click)="toggleMenu('total')"
-        aria-label="Chart menu"
-      >
-        <i class="bi bi-three-dots-vertical"></i>
-      </button>
-    </div>
+      <div class="d-flex align-items-center gap-2">
+        <div class="position-relative">
+          <button
+            type="button"
+            class="btn btn-sm btn-month-filter"
+            (click)="toggleMonthMenu('total')"
+            aria-label="Select month"
+          >
+            <i class="bi bi-calendar3"></i>
+            <span>{{ getMonthLabel('total') }}</span>
+            <i class="bi bi-chevron-down"></i>
+          </button>
 
-    <div class="card-body">
-        <div style="display:flex;align-items:center;justify-content:center;gap:0.75rem;min-height:48px">
-          @if(loading.total){
-              <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>
-          }
-          @else{
-            <ng-container *ngIf="!loading.total">
-            <div class="metric-value">
-              <span class="currency">$</span>
-              <span>{{ totalAmount | number:'1.0-2' }}</span>
+          @if (monthMenuOpen.total) {
+            <div class="month-dropdown shadow-sm rounded">
+              <div
+                class="month-option"
+                [class.active]="selectedMonthFilters.total.labelKey === 'current'"
+                (click)="selectCurrentMonth('total')"
+              >
+                <i class="bi bi-calendar-check"></i>
+                <span>Current month</span>
+                @if (selectedMonthFilters.total.labelKey === 'current') {
+                  <i class="bi bi-check2 ms-auto"></i>
+                }
+              </div>
+              <div
+                class="month-option"
+                [class.active]="selectedMonthFilters.total.labelKey === 'previous'"
+                (click)="selectPreviousMonth('total')"
+              >
+                <i class="bi bi-calendar-minus"></i>
+                <span>Previous month</span>
+                @if (selectedMonthFilters.total.labelKey === 'previous') {
+                  <i class="bi bi-check2 ms-auto"></i>
+                }
+              </div>
+              <div class="month-divider"></div>
+              @for (month of monthNames; track month; let i = $index) {
+                <div
+                  class="month-option"
+                  [class.active]="selectedMonthFilters.total.labelKey === 'month' && selectedMonthFilters.total.month === i + 1"
+                  (click)="onMonthSelect('total', i + 1)"
+                >
+                  <span>{{ month }}</span>
+                  @if (selectedMonthFilters.total.labelKey === 'month' && selectedMonthFilters.total.month === i + 1) {
+                    <i class="bi bi-check2 ms-auto"></i>
+                  }
+                </div>
+              }
             </div>
-          </ng-container>
           }
-
         </div>
+
+        <div class="position-relative">
+          <button
+            type="button"
+            class="btn btn-sm btn-icon-menu"
+            (click)="toggleMenu('total')"
+            aria-label="Chart menu"
+          >
+            <i class="bi bi-three-dots-vertical"></i>
+          </button>
+
+          @if (menuOpen.total) {
+            <div class="chart-menu shadow-sm rounded">
+              @for (item of menuItems.total; track item.action) {
+                <div class="chart-menu-item" (click)="onMenuAction('total', item.action)">
+                  <i class="bi" [ngClass]="item.icon"></i>
+                  <span>{{ item.label }}</span>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </div>
     </div>
 
-    <div *ngIf="menuOpen.total" class="chart-menu shadow-sm rounded">
-      <div class="chart-menu-item">Customize chart</div>
+    <div class="card-body metric-card">
+      @if (loading.total) {
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      } @else {
+        <div class="metric-value">
+          <span class="currency">{{ currency }}</span>
+          <span>{{ totalAmount | number:'1.0-2' }}</span>
+        </div>
+      }
     </div>
   </div>
 
@@ -41,16 +100,83 @@
     <div class="card-header d-flex align-items-center justify-content-between">
       <div>
         <h6 class="mb-1">Category Spend</h6>
-        <p class="text-muted mb-0">Expense distribution</p>
       </div>
-      <button
-        type="button"
-        class="btn btn-sm btn-outline-secondary"
-        (click)="toggleMenu('categories')"
-        aria-label="Chart menu"
-      >
-        <i class="bi bi-three-dots-vertical"></i>
-      </button>
+      <div class="d-flex align-items-center gap-2">
+        <div class="position-relative">
+          <button
+            type="button"
+            class="btn btn-sm btn-month-filter"
+            (click)="toggleMonthMenu('categories')"
+            aria-label="Select month"
+          >
+            <i class="bi bi-calendar3"></i>
+            <span>{{ getMonthLabel('categories') }}</span>
+            <i class="bi bi-chevron-down"></i>
+          </button>
+
+          @if (monthMenuOpen.categories) {
+            <div class="month-dropdown shadow-sm rounded">
+              <div
+                class="month-option"
+                [class.active]="selectedMonthFilters.categories.labelKey === 'current'"
+                (click)="selectCurrentMonth('categories')"
+              >
+                <i class="bi bi-calendar-check"></i>
+                <span>Current month</span>
+                @if (selectedMonthFilters.categories.labelKey === 'current') {
+                  <i class="bi bi-check2 ms-auto"></i>
+                }
+              </div>
+              <div
+                class="month-option"
+                [class.active]="selectedMonthFilters.categories.labelKey === 'previous'"
+                (click)="selectPreviousMonth('categories')"
+              >
+                <i class="bi bi-calendar-minus"></i>
+                <span>Previous month</span>
+                @if (selectedMonthFilters.categories.labelKey === 'previous') {
+                  <i class="bi bi-check2 ms-auto"></i>
+                }
+              </div>
+              <div class="month-divider"></div>
+              @for (month of monthNames; track month; let i = $index) {
+                <div
+                  class="month-option"
+                  [class.active]="selectedMonthFilters.categories.labelKey === 'month' && selectedMonthFilters.categories.month === i + 1"
+                  (click)="onMonthSelect('categories', i + 1)"
+                >
+                  <span>{{ month }}</span>
+                  @if (selectedMonthFilters.categories.labelKey === 'month' && selectedMonthFilters.categories.month === i + 1) {
+                    <i class="bi bi-check2 ms-auto"></i>
+                  }
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+        <div class="position-relative">
+          <button
+            type="button"
+            class="btn btn-sm btn-icon-menu"
+            (click)="toggleMenu('categories')"
+            aria-label="Chart menu"
+          >
+            <i class="bi bi-three-dots-vertical"></i>
+          </button>
+
+          @if (menuOpen.categories) {
+            <div class="chart-menu shadow-sm rounded">
+              @for (item of menuItems.categories; track item.action) {
+                <div class="chart-menu-item" (click)="onMenuAction('categories', item.action)">
+                  <i class="bi" [ngClass]="item.icon"></i>
+                  <span>{{ item.label }}</span>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </div>
     </div>
 
     <div class="card-body chart-container">
@@ -59,11 +185,7 @@
         <div *ngIf="loading.categories" class="d-flex align-items-center justify-content-center" style="min-height:220px">
           <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>
         </div>
-      </div>
-    </div>
-
-    <div *ngIf="menuOpen.categories" class="chart-menu shadow-sm rounded">
-      <div class="chart-menu-item">Customize chart</div>
+        </div>
     </div>
   </div>
 
@@ -73,14 +195,27 @@
         <h6 class="mb-1">Monthly Trend</h6>
         <p class="text-muted mb-0">Expenses over the year</p>
       </div>
-      <button
-        type="button"
-        class="btn btn-sm btn-outline-secondary"
-        (click)="toggleMenu('activity')"
-        aria-label="Chart menu"
-      >
-        <i class="bi bi-three-dots-vertical"></i>
-      </button>
+      <div class="position-relative">
+        <button
+          type="button"
+          class="btn btn-sm btn-icon-menu"
+          (click)="toggleMenu('activity')"
+          aria-label="Chart menu"
+        >
+          <i class="bi bi-three-dots-vertical"></i>
+        </button>
+
+        @if (menuOpen.activity) {
+          <div class="chart-menu shadow-sm rounded">
+            @for (item of menuItems.activity; track item.action) {
+              <div class="chart-menu-item" (click)="onMenuAction('activity', item.action)">
+                <i class="bi" [ngClass]="item.icon"></i>
+                <span>{{ item.label }}</span>
+              </div>
+            }
+          </div>
+        }
+      </div>
     </div>
 
     <div class="card-body chart-container">
@@ -89,11 +224,7 @@
         <div *ngIf="loading.activity" class="d-flex align-items-center justify-content-center" style="min-height:320px">
           <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>
         </div>
-      </div>
-    </div>
-
-    <div *ngIf="menuOpen.activity" class="chart-menu shadow-sm rounded">
-      <div class="chart-menu-item">Customize chart</div>
+        </div>
     </div>
   </div>
 </div>

@@ -1,53 +1,114 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ChangeDetectorRef } from '@angular/core';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { NgSelectModule } from '@ng-select/ng-select';
+import { finalize } from 'rxjs';
+import { AuthService } from '../../shared/auth.service';
+import { COUNTRIES } from '../../shared/model/countries';
 
 @Component({
   selector: 'app-user-badge',
   standalone: true,
-  template: `
-    <div class="ms-auto">
-      <div class="d-inline-block dropdown">
-        <button
-          class="btn p-0 bg-transparent border-0"
-          type="button"
-          id="userMenuButton"
-          data-bs-toggle="dropdown"
-          aria-expanded="false"
-        >
-          <div style="width:44px;height:44px;border-radius:50%;background:var(--bs-primary);display:flex;align-items:center;justify-content:center;color:white;font-weight:600;font-size:18px;">
-            {{ initials }}
-          </div>
-        </button>
-        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenuButton">
-          <li class="px-3 py-2">
-            <strong>{{ username }}</strong>
-            <div class="text-muted small">Signed in</div>
-          </li>
-          <li><hr class="dropdown-divider" /></li>
-          <li class="dropdown-item-text">
-            <div><strong>User Details</strong></div>
-            <div class="small text-muted">Email: {{ email }}</div>
-          </li>
-          <li><hr class="dropdown-divider" /></li>
-          <li>
-            <button class="dropdown-item text-danger" type="button" (click)="onLogout()">
-              <i class="bi bi-box-arrow-right me-2"></i>Logout
-            </button>
-          </li>
-        </ul>
-      </div>
-    </div>
-  `,
+  imports: [ReactiveFormsModule, NgSelectModule],
+  templateUrl: './user-badge.component.html',
+  styleUrl: './user-badge.component.css',
 })
 export class UserBadgeComponent {
   @Input() username: string | null = null;
   @Input() email: string | null = null;
   @Output() logout = new EventEmitter<void>();
 
+  public countries = COUNTRIES;
+  public showEditModal = false;
+  public isSaving = false;
+  public errorMessage = '';
+  public profileForm: FormGroup;
+
+  constructor(
+    private auth: AuthService,
+    private fb: FormBuilder,
+    private cdr: ChangeDetectorRef,
+  ) {
+    this.profileForm = this.fb.group({
+      username: [{ value: '', disabled: true }],
+      email: [{ value: '', disabled: true }],
+      country: [null],
+      currency: ['', Validators.required],
+    });
+  }
+
+  get country(): string | null {
+    return this.auth.country;
+  }
+
+  get currency(): string {
+    return this.auth.currency;
+  }
+
   get initials(): string {
     if (!this.username) return '';
     const parts = this.username.trim().split(/\s+/);
     if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
     return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+  }
+
+  openEditModal(): void {
+    const countryObj = this.country
+      ? this.countries.find((c) => c.name === this.country) ?? null
+      : null;
+    this.profileForm.setValue({
+      username: this.username ?? '',
+      email: this.email ?? '',
+      country: countryObj,
+      currency: this.currency,
+    });
+    this.errorMessage = '';
+    this.showEditModal = true;
+    this.cdr.detectChanges();
+  }
+
+  onCountryChange(): void {
+    const selected = this.profileForm.get('country')?.value as
+      | { name: string; currency: string }
+      | null;
+    if (selected?.currency) {
+      this.profileForm.get('currency')?.setValue(selected.currency);
+    }
+  }
+
+  closeEditModal(): void {
+    this.showEditModal = false;
+    this.cdr.detectChanges();
+  }
+
+  onSave(): void {
+    if (this.isSaving) return;
+
+    const value = this.profileForm.value;
+    const selectedCountry = value.country as { name: string; currency: string } | null;
+
+    this.isSaving = true;
+    this.errorMessage = '';
+    this.auth
+      .updateProfile({
+        country: selectedCountry?.name ?? null,
+        currency: value.currency || '$',
+      })
+      .pipe(
+        finalize(() => {
+          this.isSaving = false;
+          this.cdr.detectChanges();
+        }),
+      )
+      .subscribe({
+        next: () => {
+          this.showEditModal = false;
+          this.cdr.detectChanges();
+        },
+        error: (err: any) => {
+          this.errorMessage = this.auth.getErrorMessage(err);
+          this.cdr.detectChanges();
+        },
+      });
   }
 
   onLogout(): void {

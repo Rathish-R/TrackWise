@@ -25,36 +25,141 @@
   grid-column: span 12;
 }
 
-.chart-container {
-  min-height: 320px;
+.metric-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 130px;
 }
 
 .metric-value {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 0.5rem;
-  font-size: 2.75rem;
-  font-weight: 700;
+  font-size: 3.5rem;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  background: linear-gradient(180deg, #0d6efd 0%, #6f42c1 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
-.metric-value .currency {
-  font-size: 1.75rem;
-  color: #5b7281;
+.btn-icon-menu {
+  border: none;
+  background: transparent;
+  color: #6b7280;
+  padding: 0.375rem 0.5rem;
+  border-radius: 8px;
+  line-height: 1;
+}
+
+.btn-icon-menu:hover,
+.btn-icon-menu:focus {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.btn-month-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  color: #374151;
+  font-size: 0.85rem;
+  font-weight: 500;
+  border-radius: 8px;
+  padding: 0.4rem 0.65rem;
+  white-space: nowrap;
+}
+
+.btn-month-filter:hover,
+.btn-month-filter:focus {
+  background: #f3f4f6;
+  border-color: #d1d5db;
+}
+
+.month-dropdown {
+  position: absolute;
+  top: 2.5rem;
+  right: 0;
+  min-width: 210px;
+  max-height: 320px;
+  overflow-y: auto;
+  background: #ffffff;
+  z-index: 20;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  padding: 0.375rem 0;
+}
+
+.month-option {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.625rem 1rem;
+  color: #4b5563;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.month-option:hover {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.month-option.active {
+  color: #2563eb;
+  font-weight: 600;
+}
+
+.month-option i {
+  font-size: 1rem;
+  color: #9ca3af;
+}
+
+.month-option.active i {
+  color: #2563eb;
+}
+
+.month-divider {
+  height: 1px;
+  margin: 0.25rem 0;
+  background: #e5e7eb;
 }
 
 .chart-menu {
   position: absolute;
-  top: 3.5rem;
-  right: 1rem;
-  width: 220px;
+  top: 2.5rem;
+  right: 0;
+  min-width: 210px;
   background: #ffffff;
   z-index: 10;
   border: 1px solid rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  padding: 0.375rem 0;
 }
 
 .chart-menu-item {
-  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.625rem 1rem;
   color: #4b5563;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.chart-menu-item:hover {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.chart-menu-item i {
+  font-size: 1rem;
+  color: #9ca3af;
 }
 
 @media (min-width: 992px) {

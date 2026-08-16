@@ -1,9 +1,11 @@
-import { Component } from '@angular/core';
+import { ChangeDetectorRef, Component } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { NgSelectModule } from '@ng-select/ng-select';
+import { finalize } from 'rxjs';
 import { AuthService } from '../shared/auth.service';
 import { AuthResponse } from '../shared/model/auth';
+import { COUNTRIES } from '../shared/model/countries';
 
 @Component({
   selector: 'app-register',
@@ -18,18 +20,7 @@ export class RegisterComponent {
   public showPassword = false;
   public errorMessage = '';
 
-  public countries = [
-    'Afghanistan', 'Argentina', 'Australia', 'Austria', 'Bangladesh', 'Belgium',
-    'Brazil', 'Canada', 'Chile', 'China', 'Colombia', 'Denmark', 'Egypt',
-    'Finland', 'France', 'Germany', 'Greece', 'Hong Kong', 'Hungary', 'Iceland',
-    'India', 'Indonesia', 'Ireland', 'Israel', 'Italy', 'Japan', 'Kenya',
-    'Malaysia', 'Mexico', 'Morocco', 'Netherlands', 'New Zealand', 'Nigeria',
-    'Norway', 'Pakistan', 'Peru', 'Philippines', 'Poland', 'Portugal',
-    'Romania', 'Russia', 'Saudi Arabia', 'Singapore', 'South Africa',
-    'South Korea', 'Spain', 'Sri Lanka', 'Sweden', 'Switzerland', 'Taiwan',
-    'Thailand', 'Turkey', 'Ukraine', 'United Arab Emirates', 'United Kingdom',
-    'United States', 'Vietnam',
-  ];
+  public countries = COUNTRIES;
 
   public form: FormGroup;
 
@@ -37,6 +28,7 @@ export class RegisterComponent {
     private fb: FormBuilder,
     private auth: AuthService,
     private router: Router,
+    private cdr: ChangeDetectorRef,
   ) {
     this.form = this.fb.group({
       username: ['', Validators.required],
@@ -65,17 +57,25 @@ export class RegisterComponent {
     this.errorMessage = '';
     this.submitting = true;
     const { username, email, country, password } = this.form.value;
+    const selectedCountry = country as { name: string; currency: string } | null;
 
-    this.auth.register({ username, email, country, password }).subscribe({
-      next: (res: AuthResponse) => this.handleSuccess(res),
-      error: (err: any) => {
+    this.auth.register({
+      username,
+      email,
+      country: selectedCountry?.name ?? null,
+      currency: selectedCountry?.currency ?? null,
+      password,
+    })
+      .pipe(finalize(() => {
         this.submitting = false;
-        this.errorMessage =
-          err.status === 409
-            ? (err.error?.message ?? 'User already exists.')
-            : 'Something went wrong. Please try again.';
-      },
-    });
+        this.cdr.detectChanges();
+      }))
+      .subscribe({
+        next: (res: AuthResponse) => this.handleSuccess(res),
+        error: (err: any) => {
+          this.errorMessage = this.auth.getErrorMessage(err);
+        },
+      });
   }
 
   private handleSuccess(res: AuthResponse): void {

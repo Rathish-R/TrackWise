@@ -3,7 +3,7 @@
   <!-- HEADER -->
   <div class="d-flex justify-content-between align-items-center mb-4">
     <h5 class="mb-0">Expense Categories</h5>
-    <button class="btn btn-primary btn-sm">+ Add Category</button>
+    <button class="btn btn-primary btn-sm" (click)="openAddModal()">+ Add Category</button>
   </div>
 
   <!-- TILED GRID -->
@@ -14,7 +14,7 @@
       </div>
       <p class="mb-0">Loading categories...</p>
     </div>
-  } @else if (categories.length > 0) {
+  } @else {
     <div class="category-grid">
       @for (category of categories; track category.id) {
         <div class="category-tile" [style.background]="getColor($index)">
@@ -24,11 +24,72 @@
           <div class="category-name">{{ category.name }}</div>
         </div>
       }
-    </div>
-  } @else {
-    <div class="text-center text-muted py-5">
-      <p>No categories found</p>
+
+      <!-- ADD CATEGORY TILE -->
+      <div class="category-tile add-category-tile" (click)="openAddModal()" role="button">
+        <div class="category-icon">
+          <i class="bi bi-plus-circle"></i>
+        </div>
+        <div class="category-name">Add new Category</div>
+      </div>
     </div>
   }
 
 </div>
+
+<!-- ADD CATEGORY MODAL -->
+@if (showAddModal) {
+  <div class="modal-overlay" (click.self)="closeAddModal()">
+    <div class="modal-dialog-custom" role="dialog" aria-modal="true" aria-labelledby="addCategoryTitle">
+      <div class="modal-header-custom d-flex justify-content-between align-items-center">
+        <h5 class="modal-title" id="addCategoryTitle">Add New Category</h5>
+        <button type="button" class="btn-close" aria-label="Close" (click)="closeAddModal()"></button>
+      </div>
+
+      <form [formGroup]="categoryForm" (ngSubmit)="onSubmit()">
+        <div class="modal-body-custom">
+          <div class="mb-3">
+            <label class="form-label">Name</label>
+            <input
+              type="text"
+              class="form-control"
+              formControlName="name"
+              placeholder="e.g. Rent"
+              maxlength="40"
+            />
+            @if (categoryForm.controls['name'].touched && categoryForm.controls['name'].errors?.['required']) {
+              <div class="text-danger small mt-1">Category name is required</div>
+            }
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Icon</label>
+            <div class="icon-picker">
+              @for (icon of iconOptions; track icon) {
+                <button
+                  type="button"
+                  class="icon-option"
+                  [class.selected]="categoryForm.controls['icon'].value === icon"
+                  (click)="categoryForm.controls['icon'].setValue(icon)"
+                  [title]="icon"
+                >
+                  <i class="bi" [ngClass]="icon"></i>
+                </button>
+              }
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer-custom d-flex justify-content-end gap-2">
+          <button type="button" class="btn btn-outline-secondary" (click)="closeAddModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="categoryForm.invalid || isSaving">
+            @if (isSaving) {
+              <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+            }
+            Add Category
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

@@ -53,7 +53,6 @@ export class AddExpenseComponent implements OnInit {
       amount: formVal.amount!,
       categoryId: formVal.categoryId!,
       date: formVal.date!,
-      userId: this.auth.userId,
     };
 
     this.expenseService.create(expense).subscribe({

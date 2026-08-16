@@ -3,4 +3,6 @@ export interface Session {
   userId: number;
   username: string;
   email: string;
+  country: string | null;
+  currency: string;
 }

@@ -1,9 +1,21 @@
 import { Component, OnInit, AfterViewInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { finalize } from 'rxjs';
 import * as Highcharts from 'highcharts';
+import HighchartsExporting from 'highcharts/modules/exporting';
+import HighchartsNoData from 'highcharts/modules/no-data-to-display';
 import { ExpenseService } from '../../shared/expense.service';
 import { Expense } from '../../shared/model/Expense';
+import { AuthService } from '../../shared/auth.service';
+
+HighchartsExporting(Highcharts);
+HighchartsNoData(Highcharts);
+Highcharts.setOptions({
+  lang: {
+    noData: 'No data to display',
+  },
+});
 @Component({
   selector: 'app-dashboard',
   standalone: true,
@@ -26,11 +38,53 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     activity: false,
   };
 
+  public monthNames: string[] = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December',
+  ];
+
+  public selectedMonthFilters: Record<'total' | 'categories', { month: number; year: number; labelKey: 'current' | 'previous' | 'month' }> = {
+    total: { month: new Date().getMonth() + 1, year: new Date().getFullYear(), labelKey: 'current' },
+    categories: { month: new Date().getMonth() + 1, year: new Date().getFullYear(), labelKey: 'current' },
+  };
+  public monthMenuOpen = {
+    total: false,
+    categories: false,
+  };
+
+  getMonthLabel(key: 'total' | 'categories'): string {
+    const filter = this.selectedMonthFilters[key];
+    if (filter.labelKey === 'current') return 'Current month';
+    if (filter.labelKey === 'previous') return 'Previous month';
+    return `${this.monthNames[filter.month - 1]} ${filter.year}`;
+  }
+
+  public menuItems: Record<'total' | 'categories' | 'activity', { label: string; icon: string; action: string }[]> = {
+    total: [{ label: 'View expenses', icon: 'bi-list-ul', action: 'view-expenses' }],
+    categories: [
+      { label: 'Download as PNG', icon: 'bi-image', action: 'png' },
+      { label: 'Download as SVG', icon: 'bi-file-earmark-code', action: 'svg' },
+      { label: 'Print chart', icon: 'bi-printer', action: 'print' },
+    ],
+    activity: [
+      { label: 'Download as PNG', icon: 'bi-image', action: 'png' },
+      { label: 'Download as SVG', icon: 'bi-file-earmark-code', action: 'svg' },
+      { label: 'Print chart', icon: 'bi-printer', action: 'print' },
+    ],
+  };
+
   public pieChartOptions: Highcharts.Options = {
     chart: {
       type: 'pie',
       backgroundColor: 'transparent',
       height: 240,
+    },
+    exporting: {
+      buttons: {
+        contextButton: {
+          enabled: false,
+        },
+      },
     },
     title: {
       text: undefined,
@@ -69,6 +123,13 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       backgroundColor: 'transparent',
       height: 360,
     },
+    exporting: {
+      buttons: {
+        contextButton: {
+          enabled: false,
+        },
+      },
+    },
     title: {
       text: undefined,
     },
@@ -103,13 +164,21 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     ],
   };
 
-  constructor(private expenseService: ExpenseService,private cdr: ChangeDetectorRef) {}
+  constructor(
+    private expenseService: ExpenseService,
+    private cdr: ChangeDetectorRef,
+    private router: Router,
+    private auth: AuthService,
+  ) {}
+
+  get currency(): string {
+    return this.auth.currency;
+  }
 
   ngOnInit(): void {
     // Load real expense data for charts (categories for current month)
-    const currentMonth = new Date().getMonth() + 1;
-    this.loadTotalForMonth(currentMonth);
-    this.loadExpensesByCategory(currentMonth);
+    this.loadTotalForMonth(this.selectedMonthFilters.total.month);
+    this.loadExpensesByCategory(this.selectedMonthFilters.categories.month);
     this.loadExpensesByMonth();
   }
 
@@ -291,5 +360,78 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   toggleMenu(key: 'total' | 'categories' | 'activity'): void {
     this.menuOpen[key] = !this.menuOpen[key];
+  }
+
+  toggleMonthMenu(key: 'total' | 'categories'): void {
+    this.monthMenuOpen[key] = !this.monthMenuOpen[key];
+  }
+
+  onMonthSelect(key: 'total' | 'categories', month: number, year?: number): void {
+    const filter = this.selectedMonthFilters[key];
+    filter.month = month;
+    if (year) filter.year = year;
+    filter.labelKey = 'month';
+    this.monthMenuOpen[key] = false;
+
+    if (key === 'total') {
+      this.loadTotalForMonth(month);
+    } else {
+      this.loadExpensesByCategory(month);
+    }
+  }
+
+  selectCurrentMonth(key: 'total' | 'categories'): void {
+    const now = new Date();
+    const filter = this.selectedMonthFilters[key];
+    filter.month = now.getMonth() + 1;
+    filter.year = now.getFullYear();
+    filter.labelKey = 'current';
+    this.monthMenuOpen[key] = false;
+
+    if (key === 'total') {
+      this.loadTotalForMonth(filter.month);
+    } else {
+      this.loadExpensesByCategory(filter.month);
+    }
+  }
+
+  selectPreviousMonth(key: 'total' | 'categories'): void {
+    const filter = this.selectedMonthFilters[key];
+    const prev = new Date(filter.year, filter.month - 2, 1);
+    filter.month = prev.getMonth() + 1;
+    filter.year = prev.getFullYear();
+    filter.labelKey = 'previous';
+    this.monthMenuOpen[key] = false;
+
+    if (key === 'total') {
+      this.loadTotalForMonth(filter.month);
+    } else {
+      this.loadExpensesByCategory(filter.month);
+    }
+  }
+
+  onMenuAction(key: 'total' | 'categories' | 'activity', action: string): void {
+    this.menuOpen[key] = false;
+
+    if (action === 'view-expenses') {
+      this.router.navigate(['/expenses']);
+      return;
+    }
+
+    const chart = key === 'categories' ? this.pieChart : key === 'activity' ? this.lineChart : undefined;
+    if (!chart) return;
+
+    const filename = key === 'categories' ? 'category-spend' : 'monthly-trend';
+    switch (action) {
+      case 'png':
+        chart.exportChart({ type: 'image/png', filename }, {});
+        break;
+      case 'svg':
+        chart.exportChart({ type: 'image/svg+xml', filename }, {});
+        break;
+      case 'print':
+        chart.print();
+        break;
+    }
   }
 }

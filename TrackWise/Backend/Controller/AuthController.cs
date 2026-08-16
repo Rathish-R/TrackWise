@@ -1,5 +1,6 @@
 using Backend.Models;
 using Backend.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Backend.Controller;
@@ -9,10 +10,12 @@ namespace Backend.Controller;
 public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
+    private readonly ICurrentUserService _currentUserService;
 
-    public AuthController(IAuthService authService)
+    public AuthController(IAuthService authService, ICurrentUserService currentUserService)
     {
         _authService = authService;
+        _currentUserService = currentUserService;
     }
 
     [HttpPost("register")]
@@ -38,5 +41,33 @@ public class AuthController : ControllerBase
         if (result.Error != null)
             return Unauthorized(new { message = "Invalid password." });
         return Ok(result.Auth);
+    }
+
+    [HttpGet("me")]
+    [Authorize]
+    public async Task<IActionResult> Me()
+    {
+        var username = _currentUserService.Username;
+        if (string.IsNullOrWhiteSpace(username))
+            return Unauthorized();
+
+        var profile = await _authService.GetProfileAsync(username);
+        if (profile == null)
+            return NotFound(new { message = "User does not exist." });
+        return Ok(profile);
+    }
+
+    [HttpPut("me")]
+    [Authorize]
+    public async Task<IActionResult> UpdateMe([FromBody] UpdateProfileRequest request)
+    {
+        var username = _currentUserService.Username;
+        if (string.IsNullOrWhiteSpace(username))
+            return Unauthorized();
+
+        var profile = await _authService.UpdateProfileAsync(username, request);
+        if (profile == null)
+            return NotFound(new { message = "User does not exist." });
+        return Ok(profile);
     }
 }

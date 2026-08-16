@@ -28,12 +28,6 @@ export class ExpenseService {
     return this.http.delete<void>(this.baseUrl + '/api/Expenses/' + id);
   }
 
-  getCategoryTotals(month: number) {
-    return this.http.get<Array<{ category: string; amount: number }>>(
-      this.baseUrl + '/api/Dashboard/categories?month=' + month
-    );
-  }
-
   getAmountByMonth(month: number) {
     return this.http.get<number>(this.baseUrl + '/api/Dashboard/getAmountByMonth?month=' + month);
   }

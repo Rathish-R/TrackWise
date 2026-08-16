@@ -38,6 +38,14 @@ export class SessionService {
     return this.session?.email ?? null;
   }
 
+  get currency(): string {
+    return this.session?.currency || '$';
+  }
+
+  get country(): string | null {
+    return this.session?.country ?? null;
+  }
+
   get isAuthenticated(): boolean {
     return !!this.session;
   }

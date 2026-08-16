@@ -206,7 +206,6 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       .subscribe({
         next: (categoryData) => {
           try {
-            // Transform the data for Highcharts pie chart
             const chartData = categoryData.map((item: any) => {
               const categoryName = item.category || item.Category || 'Unknown';
               const raw = item.amount ?? item.Amount ?? 0;
@@ -214,34 +213,27 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
               const y = Number.isFinite(amountNum) ? parseFloat(amountNum.toFixed(2)) : 0;
               return { name: categoryName, y };
             });
-            this.loading.categories = false;
-            this.cdr.detectChanges();
 
-            if (chartData && chartData.length > 0) {
-              // Update pie chart options
-              this.pieChartOptions = {
-                ...this.pieChartOptions,
-                series: [
-                  {
-                    type: 'pie',
-                    name: 'Expenses',
-                    data: chartData as any,
-                  },
-                ],
-              };
+            this.pieChartOptions = {
+              ...this.pieChartOptions,
+              series: [
+                {
+                  type: 'pie',
+                  name: 'Expenses',
+                  data: chartData as any,
+                },
+              ],
+            };
 
-              // If chart is already rendered, update it
-              if (this.pieChart && this.pieChart.series && this.pieChart.series[0]) {
-                this.pieChart.series[0].setData(chartData as any, true);
-              }
-              // Ensure charts are created/updated in DOM
-              this.loadChanges();
-              this.cdr.detectChanges();
+            if (this.pieChart && this.pieChart.series && this.pieChart.series[0]) {
+              this.pieChart.series[0].setData(chartData as any, true);
             }
+            this.loadChanges();
           } catch (error) {
             console.error('Error transforming category data:', error);
-              this.loading.categories = false;
-              this.cdr.detectChanges();
+          } finally {
+            this.loading.categories = false;
+            this.cdr.detectChanges();
           }
         },
         error: (err) => {
@@ -253,17 +245,15 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private loadExpensesByMonth(): void {
-              this.cdr.detectChanges();
     this.expenseService.getExpensesByMonth().subscribe({
-      next: (monthlyData) => {
-        try {
-          const chartData = monthlyData.map((item: any) => {
-            const raw = item.amount ?? item.Amount ?? 0;
-            const num = typeof raw === 'number' ? raw : Number(raw);
-            return Number.isFinite(num) ? parseFloat(num.toFixed(2)) : 0;
-          });
+        next: (monthlyData) => {
+          try {
+            const chartData = monthlyData.map((item: any) => {
+              const raw = item.amount ?? item.Amount ?? 0;
+              const num = typeof raw === 'number' ? raw : Number(raw);
+              return Number.isFinite(num) ? parseFloat(num.toFixed(2)) : 0;
+            });
 
-          if (chartData && chartData.length > 0) {
             this.lineChartOptions = {
               ...this.lineChartOptions,
               series: [
@@ -279,16 +269,14 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
             if (this.lineChart && this.lineChart.series && this.lineChart.series[0]) {
               this.lineChart.series[0].setData(chartData, true);
             }
-            // Update/create charts inside DOM
             this.loadChanges();
+          } catch (error) {
+            console.error('Error transforming monthly data:', error);
+          } finally {
+            this.loading.activity = false;
             this.cdr.detectChanges();
           }
-        } catch (error) {
-          console.error('Error transforming monthly data:', error);
-        }
-        this.loading.activity = false;
-        this.cdr.detectChanges();
-      },
+        },
       error: (err) => {
         console.error('Error loading expenses by month:', err);
         this.loading.activity = false;

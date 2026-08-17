@@ -14,9 +14,9 @@ var builder = WebApplication.CreateBuilder(new WebApplicationOptions
 });
 builder.Configuration.Sources.Clear();
 builder.Configuration
+    .AddEnvironmentVariables()
     .AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
-    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: false)
-    .AddEnvironmentVariables();
+    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: false);
 
 // Add services to the container.
 
@@ -29,6 +29,10 @@ builder.Services.AddControllers()
 var allowedOrigins = builder.Configuration["Cors:AllowedOrigins"]
     ?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
     ?? Array.Empty<string>();
+
+Console.WriteLine($"[CORS] Environment: {builder.Environment.EnvironmentName}");
+Console.WriteLine($"[CORS] Allowed origins: {string.Join(", ", allowedOrigins)}");
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>

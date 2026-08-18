@@ -1,0 +1,14 @@
+**/.git
+**/.vs
+**/.vscode
+**/bin
+**/obj
+**/DB
+**/*.db
+**/*.log
+**/node_modules
+**/dist
+**/build_out.txt
+**/runlog.txt
+**/watch-out.log
+**/watch-err.log

@@ -5,6 +5,14 @@ A full-stack personal expense tracking application. Track your spending by categ
 Built with an **ASP.NET Core Web API** backend and an **Angular** single-page application frontend.
 
 ---
+## Screen Shots 
+<img width="1354" height="605" alt="image" src="https://github.com/user-attachments/assets/86b507c6-70a2-4375-baa7-047003adea52" />
+
+<img width="1364" height="609" alt="image" src="https://github.com/user-attachments/assets/24c10492-306f-4cfe-b1f5-625b925e9471" />
+
+<img width="1366" height="611" alt="image" src="https://github.com/user-attachments/assets/7a31374d-3a32-4a09-b7ee-f41a105bfdad" />
+
+<img width="1364" height="615" alt="image" src="https://github.com/user-attachments/assets/3bc8be72-ca77-441e-8a94-5c8900f21296" />
 
 ## ✨ Features
 
@@ -46,39 +54,6 @@ Built with an **ASP.NET Core Web API** backend and an **Angular** single-page ap
 - **Host database** (`DB/host.db`) — stores the `Users` table (accounts + preferences).
 - **Per-user databases** (`DB/<username>/`) — one SQLite file per user holding their `Expenses` and `Categories`. Created automatically on registration/first access.
 - Managed with **EF Core migrations** (`HostDbContext`); per-user databases are created with `EnsureCreated()`.
-
----
-
-## 🚀 Getting started
-
-### Prerequisites
-- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
-- [Node.js](https://nodejs.org/) (18+) and npm
-
-### 1. Run the backend
-
-```bash
-cd TrackWise/Backend
-dotnet run
-```
-
-The API starts at `http://localhost:5204`. Swagger UI is available at `/swagger`.
-
-> The port can be overridden with the `PORT` environment variable.
-
-### 2. Run the frontend
-
-```bash
-cd TrackWise/Frontend
-npm install
-npm start
-```
-
-The app opens at `http://localhost:4200`. The Angular dev server proxies API calls to the backend (`proxy.conf.json`).
-
-### 3. Register an account
-
-Sign up with a username, email, country (currency auto-mapped), and password. You'll be logged in automatically and land on the dashboard.
 
 ---
 

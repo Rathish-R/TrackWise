@@ -37,11 +37,13 @@ var allowedOrigins = builder.Configuration["Cors:AllowedOrigins"]
 Console.WriteLine($"[CORS] Environment: {builder.Environment.EnvironmentName}");
 Console.WriteLine($"[CORS] Allowed origins: {string.Join(", ", allowedOrigins)}");
 
+// temporarily allowing all origins -- have to change it later 
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins(allowedOrigins)
+        policy.AllowAnyOrigin()
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
@@ -130,7 +132,6 @@ app.UseForwardedHeaders(new ForwardedHeadersOptions
 app.UseSwagger();
 app.UseSwaggerUI();
 
-app.UseHttpsRedirection();
 app.UseRouting();
 app.UseCors("AllowFrontend");
 

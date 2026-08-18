@@ -4,6 +4,7 @@ using System.Text.Json.Serialization;
 using Backend.Data;
 using Backend.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -12,11 +13,14 @@ var builder = WebApplication.CreateBuilder(new WebApplicationOptions
 {
     Args = args,
 });
+
+// JSON files load first (as defaults), environment variables load LAST
+// so they override appsettings.json values in production (Render).
 builder.Configuration.Sources.Clear();
 builder.Configuration
-    .AddEnvironmentVariables()
     .AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
-    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: false);
+    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: false)
+    .AddEnvironmentVariables();
 
 // Add services to the container.
 
@@ -108,7 +112,7 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Bind to Render's assigned port at runtime, falling back to 8080 locally
+// Bind to Render's assigned port at runtime, falling back to 5204 locally
 var port = Environment.GetEnvironmentVariable("PORT") ?? "5204";
 app.Urls.Add($"http://0.0.0.0:{port}");
 
@@ -117,6 +121,11 @@ using (var scope = app.Services.CreateScope())
     var hostDb = scope.ServiceProvider.GetRequiredService<HostDbContext>();
     hostDb.Database.Migrate();
 }
+
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+});
 
 app.UseSwagger();
 app.UseSwaggerUI();
